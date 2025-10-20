@@ -7,7 +7,7 @@
     <div class="bg-white shadow rounded p-4">
         <p><strong>Código:</strong> {{ $producto->codigo }}</p>
         <p><strong>Marca:</strong> {{ $producto->marca ?? '-' }}</p>
-        <p><strong>Categoría:</strong> {{ $producto->categoria ?? '-' }}</p>
+    <p><strong>Categoría:</strong> {{ $producto->categoria ? $producto->categoria->descripcion : '-' }}</p>
         <p><strong>Precio venta:</strong> {{ number_format($producto->precio_venta, 2) }}</p>
         <p><strong>Stock actual:</strong> {{ $producto->stock_actual }}</p>
 

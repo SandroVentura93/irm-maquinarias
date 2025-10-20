@@ -10,7 +10,9 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ConfiguracionController;
+
 use App\Http\Controllers\MonedaController;
+use App\Http\Controllers\CategoriaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +42,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('productos/actualizar-stock', [ProductoController::class, 'actualizarStock'])->name('productos.actualizar-stock');
 // Ruta pública para ver productos con stock bajo
 Route::get('productos/stock-bajo', [ProductoController::class, 'stockBajo'])->name('productos.stock-bajo');
+
+    // RF01b: Gestión de Categorías
+    Route::resource('categorias', CategoriaController::class);
 
     // RF02: Gestión de Clientes
     Route::resource('clientes', ClienteController::class);

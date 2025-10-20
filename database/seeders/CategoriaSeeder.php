@@ -19,13 +19,11 @@ class CategoriaSeeder extends Seeder
             'Accesorios'
         ];
 
-        $i = 1;
         foreach ($categorias as $cat) {
             DB::table('categorias')->updateOrInsert(
-                ['codigo' => 'C' . str_pad($i, 3, '0', STR_PAD_LEFT)],
+                ['descripcion' => $cat],
                 ['descripcion' => $cat]
             );
-            $i++;
         }
     }
 }

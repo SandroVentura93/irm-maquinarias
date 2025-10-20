@@ -32,15 +32,7 @@
                         <option value="">Todas las categorías</option>
                         @if(isset($categorias) && $categorias)
                             @foreach($categorias as $categoria)
-                                <option value="{{ $categoria->descripcion ?? $categoria->id }}">{{ $categoria->descripcion ?? $categoria }}</option>
-                            @endforeach
-                        @else
-                            {{-- fallback: build categories from products list --}}
-                            @php
-                                $cats = $productos->pluck('categoria')->unique()->filter();
-                            @endphp
-                            @foreach($cats as $cat)
-                                <option value="{{ $cat }}">{{ $cat }}</option>
+                                <option value="{{ $categoria->id }}">{{ $categoria->descripcion }}</option>
                             @endforeach
                         @endif
                     </select>
@@ -72,7 +64,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($productos as $producto)
-                        <tr data-categoria="{{ $producto->categoria }}">
+                        <tr data-categoria="{{ $producto->categoria_id }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $producto->codigo }}</div>
                                 <div class="text-sm text-gray-500">N° Parte: {{ $producto->numero_parte }}</div>
@@ -98,7 +90,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
-                                    {{ $producto->categoria ?? 'No categorizado' }}
+                                    {{ $producto->categoria ? $producto->categoria->descripcion : 'No categorizado' }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">

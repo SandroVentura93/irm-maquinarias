@@ -10,8 +10,8 @@ class CreateCategoriasTable extends Migration
     {
         Schema::create('categorias', function (Blueprint $table) {
             $table->bigInteger('id')->unsigned()->autoIncrement();
-            $table->string('codigo', 30)->unique();
             $table->string('descripcion', 120);
+            $table->timestamps();
         });
     }
 

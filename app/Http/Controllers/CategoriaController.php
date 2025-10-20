@@ -14,7 +14,7 @@ class CategoriaController extends Controller
 
     public function index()
     {
-        $categorias = Categoria::orderBy('nombre')->paginate(10);
+    $categorias = Categoria::orderBy('descripcion')->paginate(10);
         return view('categorias.index', compact('categorias'));
     }
 
@@ -26,11 +26,12 @@ class CategoriaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|max:100|unique:categorias',
-            'descripcion' => 'nullable|max:255',
+            'descripcion' => 'required|max:120|unique:categorias',
         ]);
 
-        Categoria::create($request->all());
+        Categoria::create([
+            'descripcion' => $request->descripcion
+        ]);
 
         return redirect()->route('categorias.index')
             ->with('success', 'Categoría creada exitosamente.');
@@ -44,11 +45,12 @@ class CategoriaController extends Controller
     public function update(Request $request, Categoria $categoria)
     {
         $request->validate([
-            'nombre' => 'required|max:100|unique:categorias,nombre,' . $categoria->id,
-            'descripcion' => 'nullable|max:255',
+            'descripcion' => 'required|max:120|unique:categorias,descripcion,' . $categoria->id,
         ]);
 
-        $categoria->update($request->all());
+        $categoria->update([
+            'descripcion' => $request->descripcion
+        ]);
 
         return redirect()->route('categorias.index')
             ->with('success', 'Categoría actualizada exitosamente.');

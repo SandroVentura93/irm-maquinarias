@@ -30,7 +30,10 @@ class Venta extends Model
         'total',
         'estado',
         'omitir_fe',
-        'observaciones'
+        'observaciones',
+        'created_at',
+        'updated_at',
+        'deleted_at',
     ];
 
     // Asegura que Laravel gestione created_at/updated_at

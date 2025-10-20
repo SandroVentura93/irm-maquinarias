@@ -31,6 +31,17 @@
                 <textarea name="descripcion" class="w-full border rounded p-2">{{ old('descripcion', $producto->descripcion) }}</textarea>
             </div>
             <div>
+                <label class="block text-sm">Categoría</label>
+                <select name="categoria_id" class="w-full border rounded p-2" required>
+                    <option value="">Seleccione una categoría</option>
+                    @foreach($categorias as $categoria)
+                        <option value="{{ $categoria->id }}" {{ old('categoria_id', $producto->categoria_id) == $categoria->id ? 'selected' : '' }}>
+                            {{ $categoria->descripcion }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
                 <label class="block text-sm">Precio compra</label>
                 <input name="precio_compra" value="{{ old('precio_compra', $producto->precio_compra) }}" class="w-full border rounded p-2">
             </div>

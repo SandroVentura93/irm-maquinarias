@@ -27,7 +27,7 @@ class ProductoSeeder extends Seeder
                     'stock_actual' => rand(0, 50),
                     'stock_minimo' => rand(1, 10),
                     'marca' => 'Marca ' . rand(1,5),
-                    'categoria' => $categorias[array_rand($categorias)],
+                    'categoria_id' => $categorias[array_rand($categorias)],
                     'unidad_medida' => 'unidad',
                     'ubicacion' => 'Almacén 1',
                     'activo' => 1

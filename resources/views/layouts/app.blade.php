@@ -261,27 +261,7 @@
         </div>
     @endif
 
-    {{-- Forzar la visualización de la alerta para depuración --}}
-    @if(true)
-        <div x-data="{ open: true }" x-show="open" x-cloak class="fixed inset-0 z-50 flex items-end px-4 py-6 pointer-events-none sm:items-start sm:p-6">
-            <div class="w-full max-w-sm mx-auto bg-white rounded-lg shadow-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
-                <div class="p-4">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>
-                        </div>
-                        <div class="ml-3 w-0 flex-1 pt-0.5">
-                            <p class="text-sm font-medium text-gray-900">Productos con stock bajo</p>
-                            <p class="mt-1 text-sm text-gray-500">Esta es una alerta de prueba.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-gray-50 px-4 py-3 flex justify-end">
-                    <button @click="open = false" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    @endif
+    {{-- ...existing code... --}}
 
     @php
         Log::info('Variables en layout:', [

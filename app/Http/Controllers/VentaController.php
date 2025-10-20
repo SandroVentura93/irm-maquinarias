@@ -35,44 +35,75 @@ class VentaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'fecha' => 'nullable|date',
             'cliente_id' => 'required|exists:clientes,id',
+            'usuario_id' => 'nullable|exists:users,id',
+            'descripcion' => 'nullable|string',
             'tipo_venta' => 'required|in:contado,credito',
-            'tipo_comprobante' => 'required|in:boleta,factura,ticket',
-            'productos' => 'required|array',
-            'productos.*.id' => 'required|exists:productos,id',
-            'productos.*.cantidad' => 'required|numeric|min:0.01',
-            'productos.*.precio' => 'required|numeric|min:0'
+            'tipo_comprobante' => 'required|in:boleta,factura,ticket,guia_remision,cotizacion',
+            'serie' => 'nullable|string',
+            'correlativo' => 'nullable|integer',
+            'moneda_id' => 'required|exists:monedas,id',
+            'tc_usado' => 'nullable|numeric',
+            'subtotal' => 'nullable|numeric',
+            'descuento_total' => 'nullable|numeric',
+            'recargo_total' => 'nullable|numeric',
+            'total' => 'nullable|numeric',
+            'estado' => 'nullable|string',
+            'omitir_fe' => 'nullable|boolean',
+            'observaciones' => 'nullable|string',
+            'items_json' => 'required|string',
         ]);
+
+        // Decodificar los items desde el campo oculto
+        $items = json_decode($request->items_json, true) ?? [];
 
         DB::beginTransaction();
         try {
             $venta = Venta::create([
+                'fecha' => $request->fecha ?? now(),
                 'cliente_id' => $request->cliente_id,
                 'usuario_id' => auth()->id(),
+                'descripcion' => $request->descripcion,
                 'tipo_venta' => $request->tipo_venta,
                 'tipo_comprobante' => $request->tipo_comprobante,
-                'moneda_id' => $request->moneda_id ?? 1,
+                'serie' => $request->serie,
+                'correlativo' => $request->correlativo,
+                'moneda_id' => $request->moneda_id,
                 'tc_usado' => $request->tc_usado,
                 'subtotal' => 0,
-                'descuento_total' => $request->descuento_total ?? 0,
-                'total' => 0
+                'descuento_total' => 0,
+                'recargo_total' => $request->recargo_total ?? 0,
+                'total' => 0,
+                'estado' => $request->estado ?? 'pendiente',
+                'omitir_fe' => $request->omitir_fe ?? false,
+                'observaciones' => $request->observaciones,
             ]);
 
             $subtotal = 0;
-            foreach ($request->productos as $producto) {
+            $descuento_total = 0;
+            foreach ($items as $item) {
+                $precio_unitario = floatval($item['precio']);
+                $descuento = floatval($item['descuento'] ?? 0);
+                $cantidad = floatval($item['cantidad']);
+                $precio_final = $precio_unitario - $descuento;
+                $detalle_subtotal = $precio_final * $cantidad;
+                $subtotal += $detalle_subtotal;
+                $descuento_total += $descuento * $cantidad;
                 VentaDetalle::create([
                     'venta_id' => $venta->id,
-                    'producto_id' => $producto['id'],
-                    'cantidad' => $producto['cantidad'],
-                    'precio_unitario' => $producto['precio'],
-                    'descuento' => $producto['descuento'] ?? 0,
-                    'subtotal' => $producto['cantidad'] * $producto['precio']
+                    'producto_id' => $item['producto_id'],
+                    'descripcion' => $item['descripcion'] ?? '',
+                    'cantidad' => $cantidad,
+                    'precio_unitario' => $precio_unitario,
+                    'descuento' => $descuento,
+                    'recargo' => 0,
+                    'subtotal' => $detalle_subtotal,
                 ]);
-                $subtotal += $producto['cantidad'] * $producto['precio'];
             }
-
             $venta->subtotal = $subtotal;
-            $venta->total = $subtotal - $venta->descuento_total;
+            $venta->descuento_total = $descuento_total;
+            $venta->total = $subtotal + ($request->recargo_total ?? 0);
             $venta->save();
 
             DB::commit();

@@ -4,12 +4,23 @@
 <div class="container px-6 mx-auto">
     <h3 class="text-3xl font-semibold text-gray-800 my-6">Dashboard</h3>
 
-    <!-- RF08: Alertas de stock bajo -->
+
+    <!-- RF08: Alerta elegante de stock bajo -->
     @if($productosStockBajo->count() > 0)
-    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-        <p class="font-bold">¡Alerta de Stock Bajo!</p>
-        <p>Hay {{ $productosStockBajo->count() }} productos con stock bajo.</p>
-        <a href="{{ route('productos.stock-bajo') }}" class="text-red-700 underline">Ver detalles</a>
+    <div class="relative flex items-center bg-gradient-to-r from-red-500 via-red-400 to-pink-400 text-white rounded-lg shadow-lg p-6 mb-6 border border-red-600">
+        <div class="flex-shrink-0">
+            <svg class="w-10 h-10 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+        <div class="ml-4 flex-1">
+            <h4 class="text-xl font-bold mb-1">¡Alerta de Stock Bajo!</h4>
+            <p class="mb-2">Actualmente tienes <span class="font-bold">{{ $productosStockBajo->count() }}</span> producto{{ $productosStockBajo->count() > 1 ? 's' : '' }} con stock bajo.</p>
+            <a href="{{ route('productos.stock-bajo') }}" class="inline-block bg-white text-red-600 font-semibold px-4 py-2 rounded shadow hover:bg-red-100 transition">Ver detalles</a>
+        </div>
+        <div class="absolute top-2 right-2">
+            <span class="inline-block px-3 py-1 bg-red-700 text-xs font-bold rounded-full shadow">¡Revisar urgente!</span>
+        </div>
     </div>
     @endif
 

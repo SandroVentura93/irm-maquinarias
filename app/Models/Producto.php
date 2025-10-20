@@ -10,21 +10,14 @@ class Producto extends Model
     use HasFactory;
     // Allow mass assignment on common fields
     protected $fillable = [
-        'codigo', 'nombre', 'descripcion', 'numero_parte', 'precio_compra', 'precio_venta',
-        'stock_actual', 'stock_minimo', 'marca', 'categoria', 'unidad_medida', 'ubicacion', 'ubicacion_fisica', 'proveedor_id', 'modelo', 'peso', 'importado', 'activo'
+        'codigo', 'nombre', 'descripcion', 'marca', 'unidad_medida', 'ubicacion',
+        'precio_compra', 'precio_venta', 'stock_actual', 'stock_minimo', 'categoria_id', 'activo'
     ];
 
     // If there's a Categoria model/table, provide a relation. Otherwise this will be null-safe when accessed.
-    public function categoriaModel()
+    public function categoria()
     {
-        try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('categorias')) {
-                return $this->belongsTo(\App\Models\Categoria::class, 'categoria', 'descripcion');
-            }
-        } catch (\Exception $e) {
-            // ignore
-        }
-        return null;
+        return $this->belongsTo(\App\Models\Categoria::class, 'categoria_id');
     }
 
     // scope to active products
