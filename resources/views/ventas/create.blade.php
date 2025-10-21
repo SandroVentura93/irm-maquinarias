@@ -283,7 +283,11 @@ document.addEventListener('DOMContentLoaded', function() {
     productoId.addEventListener('change', function() {
         const selected = productoId.options[productoId.selectedIndex];
         if (selected && selected.value) {
-            const precioData = selected.getAttribute('data-precio');
+            // Corrige el nombre del atributo si es necesario
+            let precioData = selected.getAttribute('data-precio');
+            if (!precioData) {
+                precioData = selected.getAttribute('data-precio_unitario');
+            }
             const stockData = selected.getAttribute('data-stock');
             console.log('Producto seleccionado:', selected.value, 'Precio:', precioData, 'Stock:', stockData);
             precio.value = precioData || '';

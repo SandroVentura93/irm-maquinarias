@@ -7,6 +7,15 @@ use Illuminate\Http\Request;
 class ProductoController extends Controller
 {
     /**
+     * Mostrar productos con stock bajo
+     */
+    public function stockBajo()
+    {
+    // Consultar la vista v_alerta_stock_bajo
+    $productos = \DB::table('v_alerta_stock_bajo')->get();
+        return view('productos.stock_bajo', compact('productos'));
+    }
+    /**
      * Mostrar listado de productos
      */
     public function index()

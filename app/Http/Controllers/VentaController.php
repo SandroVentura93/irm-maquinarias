@@ -35,23 +35,9 @@ class VentaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'fecha' => 'nullable|date',
             'cliente_id' => 'required|exists:clientes,id',
-            'usuario_id' => 'nullable|exists:users,id',
-            'descripcion' => 'nullable|string',
             'tipo_venta' => 'required|in:contado,credito',
-            'tipo_comprobante' => 'required|in:boleta,factura,ticket,guia_remision,cotizacion',
-            'serie' => 'nullable|string',
-            'correlativo' => 'nullable|integer',
-            'moneda_id' => 'required|exists:monedas,id',
-            'tc_usado' => 'nullable|numeric',
-            'subtotal' => 'nullable|numeric',
-            'descuento_total' => 'nullable|numeric',
-            'recargo_total' => 'nullable|numeric',
-            'total' => 'nullable|numeric',
-            'estado' => 'nullable|string',
-            'omitir_fe' => 'nullable|boolean',
-            'observaciones' => 'nullable|string',
+            'metodo_pago' => 'required|string',
             'items_json' => 'required|string',
         ]);
 
@@ -61,23 +47,25 @@ class VentaController extends Controller
         DB::beginTransaction();
         try {
             $venta = Venta::create([
-                'fecha' => $request->fecha ?? now(),
+                'fecha' => now(),
                 'cliente_id' => $request->cliente_id,
                 'usuario_id' => auth()->id(),
-                'descripcion' => $request->descripcion,
                 'tipo_venta' => $request->tipo_venta,
-                'tipo_comprobante' => $request->tipo_comprobante,
-                'serie' => $request->serie,
-                'correlativo' => $request->correlativo,
-                'moneda_id' => $request->moneda_id,
-                'tc_usado' => $request->tc_usado,
+                'metodo_pago' => $request->metodo_pago,
+                // Los demás campos se envían como null/opcional
+                'descripcion' => $request->descripcion ?? null,
+                'tipo_comprobante' => $request->tipo_comprobante ?? null,
+                'serie' => $request->serie ?? null,
+                'correlativo' => $request->correlativo ?? null,
+                'moneda_id' => $request->moneda_id ?? null,
+                'tc_usado' => $request->tc_usado ?? null,
                 'subtotal' => 0,
                 'descuento_total' => 0,
                 'recargo_total' => $request->recargo_total ?? 0,
                 'total' => 0,
                 'estado' => $request->estado ?? 'pendiente',
                 'omitir_fe' => $request->omitir_fe ?? false,
-                'observaciones' => $request->observaciones,
+                'observaciones' => $request->observaciones ?? null,
             ]);
 
             $subtotal = 0;

@@ -20,25 +20,102 @@
                                 @endforeach
                             </select>
                         </div>
-
-                        <div class="sm:col-span-3">
-                            <div class="flex items-start pt-5">
-                                <div class="flex items-center h-5">
-                                    <input id="mostrar_codigo" name="mostrar_codigo" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                </div>
-                                <div class="ml-3 text-sm">
-                                    <label for="mostrar_codigo" class="font-medium text-gray-700">Mostrar código de producto</label>
-                                </div>
-                            </div>
-                        </div>
-
+                        <div class="sm:col-span-3"></div>
                         <div class="sm:col-span-6">
                             <div class="mt-1 border border-gray-200 rounded-lg shadow-sm">
                                 <div class="p-4">
-                                    <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                                        <div class="sm:col-span-3">
-                                            <label for="producto_id" class="block text-sm font-medium text-gray-700">Producto</label>
-                                            <select id="producto_id" name="producto_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                                    <table class="min-w-full divide-y mb-4" id="productosTable">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th>Código</th>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio Unitario</th>
+                                                <th>Subtotal</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="productosBody">
+                                        </tbody>
+                                    </table>
+                                    <div class="flex gap-2">
+                                        <select id="productoSelect" class="border rounded px-2 py-1">
+                                            <option value="">Seleccione producto</option>
+                                            @foreach($productos as $producto)
+                                                <option value="{{ $producto->id }}" data-codigo="{{ $producto->codigo }}" data-precio="{{ $producto->precio_venta }}">{{ $producto->nombre }}</option>
+                                            @endforeach
+                                        </select>
+                                        <input type="number" id="cantidadInput" class="border rounded px-2 py-1 w-24" placeholder="Cantidad" min="1">
+                                        <input type="number" id="precioInput" class="border rounded px-2 py-1 w-24" placeholder="Precio" step="0.01" min="0">
+                                        <button type="button" id="agregarProductoBtn" class="bg-blue-600 text-white px-3 py-1 rounded">Agregar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="sm:col-span-6 mt-4">
+                            <label class="block mb-1">Observaciones</label>
+                            <textarea name="observaciones" class="w-full border rounded px-3 py-2"></textarea>
+                        </div>
+                        <div class="sm:col-span-6 mt-4">
+                            <label class="block mb-1">Total</label>
+                            <input type="number" step="0.01" name="total" id="totalInput" class="w-full border rounded px-3 py-2" value="0" readonly>
+                        </div>
+                        <div class="sm:col-span-6 mt-4">
+                            <label class="block mb-1">Estado</label>
+                            <select name="estado" class="w-full border rounded px-3 py-2">
+                                <option value="pendiente">Pendiente</option>
+                                <option value="aprobada">Aprobada</option>
+                                <option value="rechazada">Rechazada</option>
+                            </select>
+                        </div>
+                    </div>
+                    <input type="hidden" name="detalles" id="detallesInput">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded mt-4">Guardar cotización</button>
+                </form>
+                <script>
+                let productos = [];
+                function renderProductos() {
+                    const tbody = document.getElementById('productosBody');
+                    tbody.innerHTML = '';
+                    let total = 0;
+                    productos.forEach((p, i) => {
+                        total += p.subtotal;
+                        tbody.innerHTML += `<tr>
+                            <td>${p.codigo}</td>
+                            <td>${p.nombre}</td>
+                            <td>${p.cantidad}</td>
+                            <td>S/ ${p.precio_unitario.toFixed(2)}</td>
+                            <td>S/ ${p.subtotal.toFixed(2)}</td>
+                            <td><button type='button' onclick='eliminarProducto(${i})' class='text-red-600'>Eliminar</button></td>
+                        </tr>`;
+                    });
+                    document.getElementById('totalInput').value = total.toFixed(2);
+                    document.getElementById('detallesInput').value = JSON.stringify(productos);
+                }
+                function eliminarProducto(idx) {
+                    productos.splice(idx, 1);
+                    renderProductos();
+                }
+                document.getElementById('agregarProductoBtn').onclick = function() {
+                    const select = document.getElementById('productoSelect');
+                    const cantidad = parseInt(document.getElementById('cantidadInput').value);
+                    const precio = parseFloat(document.getElementById('precioInput').value);
+                    if (!select.value || !cantidad || !precio) return;
+                    const option = select.options[select.selectedIndex];
+                    productos.push({
+                        producto_id: parseInt(select.value),
+                        codigo: option.getAttribute('data-codigo'),
+                        nombre: option.text,
+                        cantidad: cantidad,
+                        precio_unitario: precio,
+                        subtotal: cantidad * precio
+                    });
+                    renderProductos();
+                    select.value = '';
+                    document.getElementById('cantidadInput').value = '';
+                    document.getElementById('precioInput').value = '';
+                };
+                </script>
                                                 <option value="">Seleccione un producto</option>
                                                 @foreach($productos as $producto)
                                                     <option value="{{ $producto->id }}" 

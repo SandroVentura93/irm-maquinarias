@@ -15,17 +15,17 @@ class CreateVentasTable extends Migration
             $table->bigInteger('usuario_id')->unsigned();
             $table->string('descripcion', 255)->nullable();
             $table->enum('tipo_venta', ['contado', 'credito']);
-            $table->enum('tipo_comprobante', ['boleta', 'factura', 'ticket', 'guia_remision', 'cotizacion']);
+            $table->enum('tipo_comprobante', ['boleta', 'factura', 'ticket', 'guia_remision', 'cotizacion'])->nullable();
             $table->string('serie', 10)->nullable();
             $table->integer('correlativo')->unsigned()->nullable();
-            $table->tinyInteger('moneda_id')->unsigned()->default(1);
+            $table->tinyInteger('moneda_id')->unsigned()->nullable();
             $table->decimal('tc_usado', 12, 6)->nullable();
-            $table->decimal('subtotal', 14, 4)->default(0);
-            $table->decimal('descuento_total', 14, 4)->default(0);
-            $table->decimal('recargo_total', 14, 4)->default(0);
-            $table->decimal('total', 14, 4)->default(0);
-            $table->enum('estado', ['pendiente', 'deuda', 'cancelado', 'anulado'])->default('pendiente');
-            $table->boolean('omitir_fe')->default(false);
+            $table->decimal('subtotal', 14, 4)->nullable();
+            $table->decimal('descuento_total', 14, 4)->nullable();
+            $table->decimal('recargo_total', 14, 4)->nullable();
+            $table->decimal('total', 14, 4)->nullable();
+            $table->enum('estado', ['pendiente', 'deuda', 'cancelado', 'anulado'])->nullable();
+            $table->boolean('omitir_fe')->nullable();
             $table->string('observaciones', 255)->nullable();
             $table->timestamps();
 

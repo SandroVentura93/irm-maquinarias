@@ -15,14 +15,18 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y">
-                @foreach($productos as $p)
+                @forelse($productos as $p)
                     <tr>
                         <td class="px-6 py-4">{{ $p->codigo }}</td>
                         <td class="px-6 py-4">{{ $p->nombre }}</td>
                         <td class="px-6 py-4">{{ $p->stock_actual }}</td>
                         <td class="px-6 py-4">{{ $p->stock_minimo }}</td>
                     </tr>
-                @endforeach
+                @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No hay productos con stock bajo.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
