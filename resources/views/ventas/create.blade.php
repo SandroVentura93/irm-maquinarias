@@ -131,15 +131,39 @@
 
 <!-- Modal nuevo cliente -->
 <div id="modalCliente" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-    <div class="bg-white w-96 p-4 rounded shadow-lg">
+    <div class="bg-white w-[32rem] p-4 rounded shadow-lg">
         <h3 class="font-bold mb-2">Nuevo cliente</h3>
         <form id="formCliente">
             @csrf
-            <input name="nombre" placeholder="Nombre" class="w-full border rounded px-2 py-1 mb-2" required>
-            <input name="documento" placeholder="Documento" class="w-full border rounded px-2 py-1 mb-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                <input name="nombre" placeholder="Nombre" class="border rounded px-2 py-1" required>
+                <input name="apellido" placeholder="Apellido" class="border rounded px-2 py-1">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                <input name="dni" placeholder="DNI" class="border rounded px-2 py-1">
+                <input name="ruc" placeholder="RUC" class="border rounded px-2 py-1">
+            </div>
             <input name="direccion" placeholder="Dirección" class="w-full border rounded px-2 py-1 mb-2">
-            <input name="telefono" placeholder="Teléfono" class="w-full border rounded px-2 py-1 mb-2">
-            <div class="flex justify-end gap-2">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                <select name="region_id" id="region_id" class="border rounded px-2 py-1">
+                    <option value="">Seleccione región</option>
+                    @foreach(App\Models\Region::all() as $region)
+                        <option value="{{ $region->id }}">{{ $region->nombre }}</option>
+                    @endforeach
+                </select>
+                <select name="provincia_id" id="provincia_id" class="border rounded px-2 py-1">
+                    <option value="">Seleccione provincia</option>
+                </select>
+                <select name="distrito_id" id="distrito_id" class="border rounded px-2 py-1">
+                    <option value="">Seleccione distrito</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                <input name="tipo_cliente" placeholder="Tipo de cliente" class="border rounded px-2 py-1">
+                <input name="telefono" placeholder="Teléfono" class="border rounded px-2 py-1">
+            </div>
+            <input name="email" type="email" placeholder="Email" class="w-full border rounded px-2 py-1 mb-2">
+            <div class="flex justify-end gap-2 mt-2">
                 <button type="button" id="cerrarModal" class="px-3 py-1 bg-gray-200 rounded">Cancelar</button>
                 <button type="submit" class="px-3 py-1 bg-green-600 text-white rounded">Guardar</button>
             </div>
@@ -149,6 +173,49 @@
 
 @push('scripts')
 <script>
+    // --- Selects dinámicos de región/provincia/distrito en modal cliente ---
+    const regionSelect = document.getElementById('region_id');
+    const provinciaSelect = document.getElementById('provincia_id');
+    const distritoSelect = document.getElementById('distrito_id');
+
+    // --- Cache local para provincias y distritos ---
+    const cacheProvincias = {};
+    const cacheDistritos = {};
+
+    regionSelect?.addEventListener('change', async function() {
+        provinciaSelect.innerHTML = '<option value="">Cargando...</option>';
+        distritoSelect.innerHTML = '<option value="">Seleccione distrito</option>';
+        if (!this.value) {
+            provinciaSelect.innerHTML = '<option value="">Seleccione provincia</option>';
+            return;
+        }
+        if (cacheProvincias[this.value]) {
+            const provincias = cacheProvincias[this.value];
+            provinciaSelect.innerHTML = '<option value="">Seleccione provincia</option>' + provincias.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+        } else {
+            const res = await fetch(`/clientes/provincias/${this.value}`);
+            const provincias = await res.json();
+            cacheProvincias[this.value] = provincias;
+            provinciaSelect.innerHTML = '<option value="">Seleccione provincia</option>' + provincias.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+        }
+    });
+
+    provinciaSelect?.addEventListener('change', async function() {
+        distritoSelect.innerHTML = '<option value="">Cargando...</option>';
+        if (!this.value) {
+            distritoSelect.innerHTML = '<option value="">Seleccione distrito</option>';
+            return;
+        }
+        if (cacheDistritos[this.value]) {
+            const distritos = cacheDistritos[this.value];
+            distritoSelect.innerHTML = '<option value="">Seleccione distrito</option>' + distritos.map(d => `<option value="${d.id}">${d.nombre}</option>`).join('');
+        } else {
+            const res = await fetch(`/clientes/distritos/${this.value}`);
+            const distritos = await res.json();
+            cacheDistritos[this.value] = distritos;
+            distritoSelect.innerHTML = '<option value="">Seleccione distrito</option>' + distritos.map(d => `<option value="${d.id}">${d.nombre}</option>`).join('');
+        }
+    });
 document.addEventListener('DOMContentLoaded', () => {
     const buscarCliente = document.getElementById('buscarCliente');
     const resultadosClientes = document.getElementById('resultadosClientes');
@@ -166,16 +233,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---------- CLIENTES (autocomplete) ----------
     let clienteTimeout;
-    buscarCliente?.addEventListener('input', function() {
+    function cargarClientes(q = '') {
         clearTimeout(clienteTimeout);
-        const q = this.value.trim();
-        if (q.length < 1) {
-            resultadosClientes.classList.add('hidden');
-            resultadosClientes.innerHTML = '';
-            clienteInputHidden.value = '';
-            document.getElementById('infoCliente').textContent = '';
-            return;
-        }
         clienteTimeout = setTimeout(async () => {
             const res = await fetch(`/clientes/buscar?q=${encodeURIComponent(q)}`);
             const data = await res.json();
@@ -193,6 +252,23 @@ document.addEventListener('DOMContentLoaded', () => {
             ).join('');
             resultadosClientes.classList.remove('hidden');
         }, 300);
+    }
+
+    buscarCliente?.addEventListener('input', function() {
+        const q = this.value.trim();
+        if (q.length < 1) {
+            cargarClientes('');
+            clienteInputHidden.value = '';
+            document.getElementById('infoCliente').textContent = '';
+            return;
+        }
+        cargarClientes(q);
+    });
+
+    buscarCliente?.addEventListener('focus', function() {
+        if (this.value.trim().length < 1) {
+            cargarClientes('');
+        }
     });
 
     resultadosClientes?.addEventListener('click', function(e) {

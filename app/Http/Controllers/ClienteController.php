@@ -68,10 +68,14 @@ class ClienteController extends Controller
     public function buscar(Request $request): \Illuminate\Http\JsonResponse
     {
         $q = $request->query('q','');
-        $clientes = Cliente::where('nombre','LIKE',"%{$q}%")
-            ->orWhere('documento','LIKE', "%{$q}%")
-            ->limit(10)
-            ->get(['id','nombre','documento','telefono','direccion']);
+        if (empty($q)) {
+            $clientes = Cliente::limit(50)->get(['id','nombre','documento','telefono','direccion']);
+        } else {
+            $clientes = Cliente::where('nombre','LIKE',"%{$q}%")
+                ->orWhere('documento','LIKE', "%{$q}%")
+                ->limit(10)
+                ->get(['id','nombre','documento','telefono','direccion']);
+        }
         return response()->json($clientes);
     }
 
