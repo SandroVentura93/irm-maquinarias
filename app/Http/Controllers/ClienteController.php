@@ -62,16 +62,33 @@ class ClienteController extends Controller
         return redirect()->route('clientes.index')->with('success', 'Cliente actualizado exitosamente');
     }
 
-    public function buscar(Request $request)
+    /**
+     * Buscar clientes para autocompletado AJAX
+     */
+    public function buscar(Request $request): \Illuminate\Http\JsonResponse
     {
-        $query = $request->get('q');
-        $clientes = Cliente::where('nombre', 'LIKE', "%{$query}%")
-            ->orWhere('apellido', 'LIKE', "%{$query}%")
-            ->orWhere('dni', 'LIKE', "%{$query}%")
-            ->orWhere('ruc', 'LIKE', "%{$query}%")
-            ->get();
-            
+        $q = $request->query('q','');
+        $clientes = Cliente::where('nombre','LIKE',"%{$q}%")
+            ->orWhere('documento','LIKE', "%{$q}%")
+            ->limit(10)
+            ->get(['id','nombre','documento','telefono','direccion']);
         return response()->json($clientes);
+    }
+
+    /**
+     * Registrar cliente por AJAX
+     */
+    public function storeAjax(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'documento' => 'nullable|string|max:100',
+            'direccion' => 'nullable|string|max:255',
+            'telefono' => 'nullable|string|max:50',
+        ]);
+
+        $cliente = Cliente::create($validated);
+        return response()->json($cliente);
     }
 
     // AJAX: obtener provincias por region

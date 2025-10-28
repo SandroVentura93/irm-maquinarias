@@ -1,424 +1,436 @@
 @extends('layouts.app')
 
+@section('title','Registrar Venta')
 @section('content')
-<div class="container mx-auto px-2 sm:px-4 lg:px-8 py-6">
-    <div class="max-w-3xl mx-auto">
-        <div class="bg-white shadow-xl rounded-2xl overflow-hidden">
-            <div class="px-6 py-6 border-b flex items-center justify-between">
-                <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <i class="fas fa-cash-register text-blue-600"></i> Nueva Venta
-                </h2>
-                <button type="button" onclick="history.back()" class="text-gray-500 hover:text-blue-600 text-sm flex items-center gap-1"><i class="fas fa-arrow-left"></i> Volver</button>
+<div class="max-w-5xl mx-auto mt-8 mb-8 p-6 bg-white rounded-lg shadow-lg relative z-10">
+    <h1 class="text-2xl font-bold mb-4">Registrar Venta</h1>
+
+    <form id="formVenta" action="{{ route('ventas.store') }}" method="POST">
+        @csrf
+
+        {{-- Cliente --}}
+        <div class="mb-4 relative shadow-lg rounded-lg bg-white p-4">
+            <label class="font-semibold block mb-2">Cliente</label>
+            <div class="flex gap-2">
+                <input type="text" id="buscarCliente" class="border rounded px-3 py-2 w-full focus:ring focus:border-blue-400" placeholder="Buscar cliente..." autocomplete="off">
+                <input type="hidden" name="cliente_id" id="cliente_id">
+                <button type="button" id="btnNuevoCliente" class="bg-green-600 text-white px-3 py-2 rounded flex items-center gap-1"><span>+ Nuevo</span></button>
             </div>
-            <form action="{{ route('ventas.store') }}" method="POST" id="ventaForm" class="px-6 py-6 space-y-6">
-                @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                    <div>
-                        <label for="cliente_id" class="block text-sm font-semibold text-gray-700 mb-1">Cliente <span class="text-red-500">*</span></label>
-                        <div class="flex gap-2">
-                            <select id="cliente_id" name="cliente_id" required class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3">
-                                <option value="">Seleccione un cliente</option>
-                                @foreach($clientes as $cliente)
-                                    <option value="{{ $cliente->id }}">{{ $cliente->nombre }}</option>
-                                @endforeach
-                            </select>
-                            <button type="button" id="btnAgregarCliente" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow transition"><i class="fas fa-user-plus mr-1"></i> Nuevo</button>
-                        </div>
-                    </div>
-
-                            <!-- Modal agregar cliente -->
-                            <div id="modalCliente" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 hidden">
-                                <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-0 relative animate-fade-in">
-                                    <div class="flex justify-between items-center px-6 py-4 border-b">
-                                        <h3 class="text-xl font-semibold text-gray-800">Nuevo Cliente</h3>
-                                        <button type="button" id="cerrarModalCliente" class="text-gray-400 hover:text-gray-700 text-2xl font-bold">&times;</button>
-                                    </div>
-                                    <form id="formNuevoCliente" class="px-6 py-4">
-                                        @csrf
-                                        <div class="mb-4">
-                                            <label for="nuevo_nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
-                                            <input type="text" id="nuevo_nombre" name="nombre" required class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3 transition">
-                                        </div>
-                                        <div class="mb-4 grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label for="nuevo_dni" class="block text-sm font-medium text-gray-700 mb-1">DNI</label>
-                                                <input type="text" id="nuevo_dni" name="dni" maxlength="8" class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3 transition">
-                                            </div>
-                                            <div>
-                                                <label for="nuevo_ruc" class="block text-sm font-medium text-gray-700 mb-1">RUC</label>
-                                                <input type="text" id="nuevo_ruc" name="ruc" maxlength="11" class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3 transition">
-                                            </div>
-                                        </div>
-                                        <div class="mb-4 grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label for="nuevo_email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                                <input type="email" id="nuevo_email" name="email" class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3 transition">
-                                            </div>
-                                            <div>
-                                                <label for="nuevo_telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                                <input type="text" id="nuevo_telefono" name="telefono" class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3 transition">
-                                            </div>
-                                        </div>
-                                        <div class="flex justify-end mt-6">
-                                            <button type="button" id="guardarCliente" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-5 rounded-lg shadow transition">
-                                                <i class="fas fa-save"></i> Guardar
-                                            </button>
-                                        </div>
-                                        <div id="clienteError" class="text-red-600 text-sm mt-2 hidden"></div>
-                                    </form>
-                                </div>
-                            </div>
-
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Modal cliente UX
-    const modal = document.getElementById('modalCliente');
-    const btnAgregarCliente = document.getElementById('btnAgregarCliente');
-    const cerrarModalCliente = document.getElementById('cerrarModalCliente');
-    const guardarCliente = document.getElementById('guardarCliente');
-    const clienteError = document.getElementById('clienteError');
-    const clienteSelect = document.getElementById('cliente_id');
-    btnAgregarCliente.onclick = function() {
-        modal.classList.remove('hidden');
-        setTimeout(() => modal.classList.add('animate-fade-in'), 10);
-        clienteError.classList.add('hidden');
-    }
-    cerrarModalCliente.onclick = function() {
-        modal.classList.remove('animate-fade-in');
-        setTimeout(() => modal.classList.add('hidden'), 200);
-    }
-    guardarCliente.onclick = function(e) {
-        e.preventDefault();
-        let form = document.getElementById('formNuevoCliente');
-        let data = new FormData(form);
-        guardarCliente.disabled = true;
-        guardarCliente.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-        fetch("{{ route('clientes.store') }}", {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value,
-                'Accept': 'application/json'
-            },
-            body: data
-        })
-        .then(response => response.json())
-        .then(json => {
-            guardarCliente.disabled = false;
-            guardarCliente.innerHTML = '<i class="fas fa-save"></i> Guardar';
-            if(json.errors) {
-                let msg = Object.values(json.errors).map(arr => arr.join(' ')).join(' ');
-                clienteError.innerText = msg;
-                clienteError.classList.remove('hidden');
-            } else if(json.id) {
-                let option = document.createElement('option');
-                option.value = json.id;
-                option.text = json.nombre;
-                option.selected = true;
-                clienteSelect.appendChild(option);
-                modal.classList.remove('animate-fade-in');
-                setTimeout(() => modal.classList.add('hidden'), 200);
-                form.reset();
-                clienteError.classList.add('hidden');
-                // Feedback visual
-                Toast('Cliente agregado correctamente', 'success');
-            }
-        })
-        .catch(() => {
-            guardarCliente.disabled = false;
-            guardarCliente.innerHTML = '<i class="fas fa-save"></i> Guardar';
-            clienteError.innerText = 'Error al guardar cliente.';
-            clienteError.classList.remove('hidden');
-        });
-    }
-
-    // Toast feedback
-    window.Toast = function(msg, type = 'info') {
-        let toast = document.createElement('div');
-        toast.className = 'fixed top-6 right-6 z-50 px-4 py-2 rounded shadow-lg text-white text-sm font-semibold ' + (type === 'success' ? 'bg-green-600' : 'bg-blue-600');
-        toast.innerText = msg;
-        document.body.appendChild(toast);
-        setTimeout(() => { toast.classList.add('opacity-0'); }, 1800);
-        setTimeout(() => { toast.remove(); }, 2200);
-    }
-
-    // ...existing code...
-});
-</script>
-<style>
-@keyframes fade-in {
-  from { opacity: 0; transform: translateY(40px) scale(0.98); }
-  to { opacity: 1; transform: none; }
-}
-.animate-fade-in {
-  animation: fade-in 0.25s cubic-bezier(.4,0,.2,1);
-}
-</style>
-@endpush
-                        </div>
-
-
-                    <div>
-                        <label for="tipo_pago" class="block text-sm font-semibold text-gray-700 mb-1">Tipo de Pago</label>
-                        <select id="tipo_pago" name="tipo_pago" required class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3">
-                            <option value="contado">Contado</option>
-                            <option value="credito">Crédito</option>
-                        </select>
-                    </div>
-
-
-                    <div>
-                        <label for="metodo_pago" class="block text-sm font-semibold text-gray-700 mb-1">Método de Pago</label>
-                        <select id="metodo_pago" name="metodo_pago" required class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3">
-                            <option value="efectivo">Efectivo</option>
-                            <option value="yape">Yape</option>
-                            <option value="plin">Plin</option>
-                            <option value="transferencia">Transferencia</option>
-                            <option value="pos">POS</option>
-                        </select>
-                    </div>
-
-                </div>
-
-                <div class="bg-gray-50 border border-gray-200 rounded-xl shadow-inner p-4">
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                        <div class="md:col-span-2">
-                            <label for="producto_id" class="block text-sm font-semibold text-gray-700 mb-1">Producto</label>
-                            <select id="producto_id" name="producto_id" class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3">
-                                <option value="">Seleccione un producto</option>
-                                @foreach($productos as $producto)
-                                    <option value="{{ $producto->id }}" data-precio="{{ $producto->precio_unitario }}" data-stock="{{ $producto->stock }}">{{ $producto->descripcion }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="cantidad" class="block text-sm font-semibold text-gray-700 mb-1">Cantidad</label>
-                            <input type="number" min="1" id="cantidad" name="cantidad" class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3">
-                        </div>
-                        <div>
-                            <label for="precio" class="block text-sm font-semibold text-gray-700 mb-1">Precio</label>
-                            <input type="number" step="0.01" id="precio" name="precio" class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3 bg-gray-100" readonly>
-                        </div>
-                        <div>
-                            <label for="descuento" class="block text-sm font-semibold text-gray-700 mb-1">Descuento</label>
-                            <input type="number" step="0.01" min="0" id="descuento" name="descuento" value="0" class="block w-full rounded-lg border border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 py-2 px-3">
-                        </div>
-                        <div>
-                            <label for="stock_disponible" class="block text-sm font-semibold text-gray-700 mb-1">Stock</label>
-                            <input type="text" id="stock_disponible" readonly class="block w-full bg-gray-100 border border-gray-300 rounded-lg py-2 px-3">
-                        </div>
-                        <div>
-                            <button type="button" id="agregarProducto" class="w-full inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition"><i class="fas fa-cart-plus"></i> Agregar</button>
-                        </div>
-                    </div>
-                </div>
-
-                        <!-- Campos innecesarios eliminados para simplificar el formulario -->
-
-
+            <div id="resultadosClientes" class="absolute bg-white border w-full rounded mt-1 z-20 hidden max-h-56 overflow-auto"></div>
+            <div id="infoCliente" class="mt-2 text-sm text-gray-700"></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2" id="camposExtraCliente">
                 <div>
-                    <table class="min-w-full divide-y divide-gray-200 rounded-xl overflow-hidden mt-4">
-                        <thead class="bg-blue-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-blue-700 uppercase">Producto</th>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-blue-700 uppercase">Cantidad</th>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-blue-700 uppercase">Precio</th>
-                                <th class="px-4 py-2 text-left text-xs font-semibold text-blue-700 uppercase">Subtotal</th>
-                                <th class="px-4 py-2"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="detalleVenta" class="bg-white divide-y divide-gray-200">
-                            <!-- Los items se agregarán aquí dinámicamente -->
-                        </tbody>
-                    </table>
+                    <label class="text-xs text-gray-500">Email</label>
+                    <input type="email" id="cliente_email" class="border rounded px-2 py-1 w-full bg-gray-50" readonly>
                 </div>
-
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                    <div class="bg-blue-50 rounded-xl p-4 flex flex-col items-center">
-                        <span class="text-xs text-blue-700 font-semibold">Subtotal</span>
-                        <span class="text-lg font-bold text-blue-900">S/ <span id="subtotal">0.00</span></span>
-                    </div>
-                    <div class="bg-blue-50 rounded-xl p-4 flex flex-col items-center">
-                        <span class="text-xs text-blue-700 font-semibold">IGV (18%)</span>
-                        <span class="text-lg font-bold text-blue-900">S/ <span id="igv">0.00</span></span>
-                    </div>
-                    <div class="bg-blue-100 rounded-xl p-4 flex flex-col items-center border-2 border-blue-400">
-                        <span class="text-xs text-blue-900 font-bold">Total</span>
-                        <span class="text-2xl font-extrabold text-blue-900">S/ <span id="total">0.00</span></span>
-                        <input type="hidden" name="total" id="total_input" value="0">
-                        <input type="hidden" name="igv" id="igv_input" value="0">
-                    </div>
+                <div>
+                    <label class="text-xs text-gray-500">Dirección</label>
+                    <input type="text" id="cliente_direccion" class="border rounded px-2 py-1 w-full bg-gray-50" readonly>
                 </div>
-                    </div>
-
-
-                <div class="flex justify-end mt-8">
-                    <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition text-lg">
-                        <i class="fas fa-file-invoice"></i> Emitir Comprobante
-                    </button>
+                <div>
+                    <label class="text-xs text-gray-500">Teléfono</label>
+                    <input type="text" id="cliente_telefono" class="border rounded px-2 py-1 w-full bg-gray-50" readonly>
                 </div>
-            </form>
+            </div>
         </div>
+
+        {{-- Datos extras --}}
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div>
+                <label class="font-medium">Tipo venta</label>
+                <select name="tipo_venta" class="border rounded w-full p-2">
+                    <option value="contado">Contado</option><option value="credito">Crédito</option>
+                </select>
+            </div>
+            <div>
+                <label class="font-medium">Tipo comprobante</label>
+                <select name="tipo_comprobante" class="border rounded w-full p-2">
+                    <option value="BOLETA">Boleta</option><option value="FACTURA">Factura</option>
+                </select>
+            </div>
+            <div>
+                <label class="font-medium">Moneda</label>
+                <select name="moneda_id" class="border rounded w-full p-2">
+                    <option value="1">Soles</option><option value="2">Dólares</option>
+                </select>
+            </div>
+            <div>
+                <label class="font-medium">Fecha</label>
+                <input type="date" name="fecha" class="border rounded w-full p-2" value="{{ date('Y-m-d') }}">
+            </div>
+        </div>
+
+        {{-- Buscador producto --}}
+        <div class="mb-2 relative">
+            <input type="text" id="buscarProducto" class="border rounded px-3 py-2 w-full focus:ring focus:border-blue-400" placeholder="Buscar producto..." autocomplete="off">
+            <div id="spinnerProducto" class="absolute right-2 top-2 hidden"><svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg></div>
+            <div id="resultadosProductos" class="absolute bg-white border w-full rounded mt-1 z-20 hidden max-h-56 overflow-auto"></div>
+        </div>
+
+        {{-- Tabla detalle --}}
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border rounded-lg shadow-lg bg-white" id="tabla-detalle">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="p-2 border">Código</th>
+                        <th class="p-2 border">Descripción</th>
+                        <th class="p-2 border">Stock</th>
+                        <th class="p-2 border">Cant.</th>
+                        <th class="p-2 border">Precio</th>
+                        <th class="p-2 border">Desc (%)</th>
+                        <th class="p-2 border">Recargo</th>
+                        <th class="p-2 border">Subtotal</th>
+                        <th class="p-2 border">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="detalle-body">
+                    <!-- filas agregadas dinámicamente -->
+                </tbody>
+            </table>
+            <div class="flex justify-end mt-2">
+                <button type="button" id="btnLimpiarProductos" class="bg-gray-200 text-gray-700 px-3 py-1 rounded hover:bg-gray-300">Limpiar productos</button>
+            </div>
+        </div>
+
+        {{-- Totales --}}
+        <div class="mt-4 flex justify-end space-x-6 items-end">
+            <div class="flex-1">
+                <label class="font-medium">Observaciones</label>
+                <textarea name="observaciones" rows="2" class="border rounded w-full p-2" placeholder="Notas internas, observaciones, etc..."></textarea>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-600">Subtotal</div>
+                <div id="subtotal_global" class="text-lg font-bold">0.00</div>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-600">Descuento total</div>
+                <div id="descuento_global" class="text-lg font-bold">0.00</div>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-600">Recargo total</div>
+                <div id="recargo_global" class="text-lg font-bold">0.00</div>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-600">Total</div>
+                <div id="total_global" class="text-2xl font-extrabold">0.00</div>
+                <input type="hidden" name="subtotal" id="input_subtotal">
+                <input type="hidden" name="descuento_total" id="input_descuento_total">
+                <input type="hidden" name="recargo_total" id="input_recargo_total">
+                <input type="hidden" name="total" id="input_total">
+            </div>
+        </div>
+
+        <div class="mt-4 flex justify-end">
+            <button type="submit" id="btnGuardarVenta" class="bg-blue-600 text-white px-4 py-2 rounded flex items-center gap-2" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                Guardar Venta
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal nuevo cliente -->
+<div id="modalCliente" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+    <div class="bg-white w-96 p-4 rounded shadow-lg">
+        <h3 class="font-bold mb-2">Nuevo cliente</h3>
+        <form id="formCliente">
+            @csrf
+            <input name="nombre" placeholder="Nombre" class="w-full border rounded px-2 py-1 mb-2" required>
+            <input name="documento" placeholder="Documento" class="w-full border rounded px-2 py-1 mb-2">
+            <input name="direccion" placeholder="Dirección" class="w-full border rounded px-2 py-1 mb-2">
+            <input name="telefono" placeholder="Teléfono" class="w-full border rounded px-2 py-1 mb-2">
+            <div class="flex justify-end gap-2">
+                <button type="button" id="cerrarModal" class="px-3 py-1 bg-gray-200 rounded">Cancelar</button>
+                <button type="submit" class="px-3 py-1 bg-green-600 text-white rounded">Guardar</button>
+            </div>
+        </form>
     </div>
 </div>
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let items = [];
-    let subtotal = 0;
-    let igv = 0;
-    let total = 0;
-    const IGV_RATE = 0.18;
+document.addEventListener('DOMContentLoaded', () => {
+    const buscarCliente = document.getElementById('buscarCliente');
+    const resultadosClientes = document.getElementById('resultadosClientes');
+    const clienteInputHidden = document.getElementById('cliente_id');
 
-    const productoId = document.getElementById('producto_id');
-    const cantidad = document.getElementById('cantidad');
-    const precio = document.getElementById('precio');
-    const descuento = document.getElementById('descuento');
-    const stockDisp = document.getElementById('stock_disponible');
-    const agregarProducto = document.getElementById('agregarProducto');
+    const buscarProducto = document.getElementById('buscarProducto');
+    const resultadosProductos = document.getElementById('resultadosProductos');
 
-    productoId.addEventListener('change', function() {
-        const selected = productoId.options[productoId.selectedIndex];
-        if (selected && selected.value) {
-            // Corrige el nombre del atributo si es necesario
-            let precioData = selected.getAttribute('data-precio');
-            if (!precioData) {
-                precioData = selected.getAttribute('data-precio_unitario');
-            }
-            const stockData = selected.getAttribute('data-stock');
-            console.log('Producto seleccionado:', selected.value, 'Precio:', precioData, 'Stock:', stockData);
-            precio.value = precioData || '';
-            stockDisp.value = stockData || '';
-            descuento.value = 0;
-        } else {
-            precio.value = '';
-            stockDisp.value = '';
-            descuento.value = 0;
-        }
-    });
+    const detalleBody = document.getElementById('detalle-body');
 
-    // Campo oculto para los items serializados
-    let itemsInput = document.createElement('input');
-    itemsInput.type = 'hidden';
-    itemsInput.name = 'items_json';
-    document.getElementById('ventaForm').appendChild(itemsInput);
+    const modal = document.getElementById('modalCliente');
+    const btnNuevoCliente = document.getElementById('btnNuevoCliente');
+    const cerrarModal = document.getElementById('cerrarModal');
+    const formCliente = document.getElementById('formCliente');
 
-    agregarProducto.addEventListener('click', async function() {
-        if (!productoId.value || !cantidad.value || !precio.value) {
-            alert('Por favor complete todos los campos requeridos');
+    // ---------- CLIENTES (autocomplete) ----------
+    let clienteTimeout;
+    buscarCliente?.addEventListener('input', function() {
+        clearTimeout(clienteTimeout);
+        const q = this.value.trim();
+        if (q.length < 1) {
+            resultadosClientes.classList.add('hidden');
+            resultadosClientes.innerHTML = '';
+            clienteInputHidden.value = '';
+            document.getElementById('infoCliente').textContent = '';
             return;
         }
-        // Validar stock
-        try {
-            const response = await fetch('/ventas/validar-stock', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    producto_id: productoId.value,
-                    cantidad: cantidad.value
-                })
-            });
-            const data = await response.json();
-            if (!data.success) {
-                alert(data.message);
+        clienteTimeout = setTimeout(async () => {
+            const res = await fetch(`/clientes/buscar?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            if (data.length === 0) {
+                resultadosClientes.innerHTML = `<div class='p-2 text-gray-500'>No se encontraron clientes</div>`;
+                resultadosClientes.classList.remove('hidden');
+                clienteInputHidden.value = '';
+                document.getElementById('infoCliente').textContent = '';
                 return;
             }
-            const subtotalItem = (parseFloat(cantidad.value) * parseFloat(precio.value)) - (parseFloat(descuento.value) || 0);
-            // Obtener la descripción del producto seleccionado
-            const selected = productoId.options[productoId.selectedIndex];
-            const descripcion = selected ? selected.text : '';
-            items.push({
-                producto_id: productoId.value,
-                descripcion: descripcion,
-                cantidad: cantidad.value,
-                precio: precio.value,
-                descuento: descuento.value,
-                subtotal: subtotalItem
-            });
-            actualizarTabla();
-            limpiarFormularioProducto();
-        } catch (error) {
-            alert('Error al validar el stock');
-            console.error('Error:', error);
+            resultadosClientes.innerHTML = data.map(c => 
+                `<div class="p-2 hover:bg-gray-100 cursor-pointer" data-id="${c.id}" data-nombre="${c.nombre}" data-documento="${c.documento ?? ''}">
+                    ${c.nombre} ${c.documento ? ' - ' + c.documento : ''}
+                </div>`
+            ).join('');
+            resultadosClientes.classList.remove('hidden');
+        }, 300);
+    });
+
+    resultadosClientes?.addEventListener('click', function(e) {
+        const div = e.target.closest('div[data-id]');
+        if (!div) return;
+        clienteInputHidden.value = div.dataset.id;
+        buscarCliente.value = div.dataset.nombre;
+        document.getElementById('infoCliente').textContent = `Seleccionado: ${div.dataset.nombre} ${div.dataset.documento ? ' - ' + div.dataset.documento : ''}`;
+        // Simulación de datos extra (en real, deberías obtenerlos por AJAX)
+        document.getElementById('cliente_email').value = div.dataset.email || '';
+        document.getElementById('cliente_direccion').value = div.dataset.direccion || '';
+        document.getElementById('cliente_telefono').value = div.dataset.telefono || '';
+        resultadosClientes.classList.add('hidden');
+        validarGuardarVenta();
+    });
+
+    document.addEventListener('click', e => {
+        if (!buscarCliente?.contains(e.target) && !resultadosClientes?.contains(e.target)) {
+            resultadosClientes?.classList.add('hidden');
         }
     });
 
-    function actualizarTabla() {
-        // Actualizar el campo oculto con los items serializados
-        itemsInput.value = JSON.stringify(items);
-        const tbody = document.getElementById('detalleVenta');
-        tbody.innerHTML = '';
-        subtotal = 0;
-        items.forEach((item, index) => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    ${item.descripcion}
-                    <input type="hidden" name="items[${index}][producto_id]" value="${item.producto_id}">
-                    <input type="hidden" name="items[${index}][cantidad]" value="${item.cantidad}">
-                    <input type="hidden" name="items[${index}][precio]" value="${item.precio}">
-                    <input type="hidden" name="items[${index}][descuento]" value="${item.descuento}">
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.cantidad}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">S/ ${parseFloat(item.precio).toFixed(2)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">S/ ${item.descuento ? ('-' + parseFloat(item.descuento).toFixed(2)) : '0.00'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">S/ ${parseFloat(item.subtotal).toFixed(2)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button type="button" onclick="eliminarItem(${index})"
-                            class="text-red-600 hover:text-red-900">Eliminar</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-            subtotal += parseFloat(item.subtotal);
+    // ---------- MODAL CLIENTE ----------
+    btnNuevoCliente.onclick = () => modal.classList.remove('hidden');
+    cerrarModal.onclick = () => modal.classList.add('hidden');
+
+    formCliente.onsubmit = async function(e) {
+        e.preventDefault();
+        const f = new FormData(this);
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        const res = await fetch('/clientes/crear', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': token },
+            body: f
         });
-        igv = subtotal * IGV_RATE;
-        total = subtotal + igv;
-        document.getElementById('subtotal').textContent = subtotal.toFixed(2);
-        document.getElementById('igv').textContent = igv.toFixed(2);
-        document.getElementById('total').textContent = total.toFixed(2);
-        document.getElementById('total_input').value = total;
-        document.getElementById('igv_input').value = igv;
-    }
+        if (!res.ok) return alert('Error creando cliente');
+        const nuevo = await res.json();
+        document.getElementById('cliente_id').value = nuevo.id;
+        buscarCliente.value = nuevo.nombre;
+        document.getElementById('infoCliente').textContent = `Seleccionado: ${nuevo.nombre} ${nuevo.documento ? ' - ' + nuevo.documento : ''}`;
+        modal.classList.add('hidden');
+        this.reset();
+        toast('Cliente registrado correctamente', 'success');
+        validarGuardarVenta();
+    };
 
-    window.eliminarItem = function(index) {
-        items.splice(index, 1);
-        actualizarTabla();
-    }
-
-    function limpiarFormularioProducto() {
-        productoId.value = '';
-        cantidad.value = '';
-        precio.value = '';
-        descuento.value = 0;
-        stockDisp.value = '';
-    }
-
-    // Interceptar submit para validar y serializar items
-    document.getElementById('ventaForm').addEventListener('submit', function(e) {
-        if (items.length === 0) {
-            e.preventDefault();
-            alert('Debe agregar al menos un producto a la venta.');
-            return false;
+    // ---------- PRODUCTOS (autocomplete) ----------
+    buscarProducto?.addEventListener('input', async function() {
+        const q = this.value.trim();
+        document.getElementById('spinnerProducto').classList.remove('hidden');
+        if (q.length < 1) { resultadosProductos.classList.add('hidden'); document.getElementById('spinnerProducto').classList.add('hidden'); return; }
+        const res = await fetch(`/productos/buscar?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (data.length === 0) {
+            resultadosProductos.innerHTML = `<div class='p-2 text-gray-500'>No se encontraron productos</div>`;
+            resultadosProductos.classList.remove('hidden');
+            document.getElementById('spinnerProducto').classList.add('hidden');
+            return;
         }
-        itemsInput.value = JSON.stringify(items);
+        resultadosProductos.innerHTML = data.map(p =>
+            `<div class="p-2 hover:bg-gray-100 cursor-pointer flex justify-between items-center" 
+                  data-id="${p.id}" data-codigo="${p.codigo_producto}" data-nombre="${p.descripcion}" 
+                  data-precio="${p.precio_unitario}" data-stock="${p.stock_actual}">
+                <div>${p.codigo_producto} - ${p.descripcion}</div>
+                <div class="text-sm text-green-600">S/ ${parseFloat(p.precio_unitario).toLocaleString('es-PE', {minimumFractionDigits:2})}</div>
+            </div>`
+        ).join('');
+        resultadosProductos.classList.remove('hidden');
+        document.getElementById('spinnerProducto').classList.add('hidden');
     });
 
-    // Mostrar/ocultar campos de crédito
-    document.getElementById('tipo_pago').addEventListener('change', function() {
-        const creditoFields = document.getElementById('credito_fields');
-        if (this.value === 'credito') {
-            creditoFields.classList.remove('hidden');
+    resultadosProductos?.addEventListener('click', function(e) {
+        const div = e.target.closest('div[data-id]');
+        if (!div) return;
+        const p = {
+            id: div.dataset.id,
+            codigo: div.dataset.codigo,
+            nombre: div.dataset.nombre,
+            precio: parseFloat(div.dataset.precio || 0),
+            stock: parseFloat(div.dataset.stock || 0)
+        };
+        // Si el producto ya está en la tabla, suma cantidad
+        let existe = false;
+        document.querySelectorAll('#detalle-body tr').forEach(tr => {
+            if (tr.querySelector('[name="producto_id[]"]').value == p.id) {
+                let cantidadInput = tr.querySelector('[name="cantidad[]"]');
+                cantidadInput.value = parseInt(cantidadInput.value) + 1;
+                // Actualiza precio y stock automáticamente
+                tr.querySelector('[name="precio_unitario[]"]').value = p.precio.toFixed(2);
+                tr.querySelector('[name="stock[]"]').value = p.stock;
+                tr.querySelector('[name="precio_unitario[]"]').setAttribute('readonly', true);
+                tr.querySelector('[name="stock[]"]').setAttribute('readonly', true);
+                existe = true;
+                filaActualizar(cantidadInput);
+            }
+        });
+        if (!existe) {
+            agregarFilaProducto(p);
+            // Bloquear edición manual de precio y stock en la nueva fila
+            const filas = document.querySelectorAll('#detalle-body tr');
+            const ultima = filas[filas.length-1];
+            ultima.querySelector('[name="precio_unitario[]"]').setAttribute('readonly', true);
+            ultima.querySelector('[name="stock[]"]').setAttribute('readonly', true);
+        }
+        buscarProducto.value = '';
+        resultadosProductos.classList.add('hidden');
+        validarGuardarVenta();
+    });
+
+    document.addEventListener('click', e => {
+        if (!buscarProducto?.contains(e.target) && !resultadosProductos?.contains(e.target)) {
+            resultadosProductos?.classList.add('hidden');
+        }
+    });
+
+    // ---------- FUNCIONES DE FILAS Y CÁLCULOS ----------
+    function agregarFilaProducto(p) {
+        const tr = document.createElement('tr');
+        tr.classList.add('bg-gray-50','hover:bg-blue-50');
+        tr.innerHTML = `
+            <td class="p-2 border"><input name="codigo_producto[]" value="${p.codigo}" readonly class="w-full bg-transparent"></td>
+            <td class="p-2 border"><input name="descripcion_detalle[]" value="${p.nombre}" readonly class="w-full bg-transparent"></td>
+            <td class="p-2 border text-center">
+                <input name="stock[]" value="${p.stock}" readonly class="w-16 text-center bg-transparent">
+                <div class="text-xs text-gray-500">Stock disponible</div>
+            </td>
+            <td class="p-2 border text-center">
+                <input name="cantidad[]" type="number" value="1" min="1" max="${p.stock}" class="w-20 text-center" onchange="filaActualizar(this)">
+                <div class="text-xs text-red-500 hidden" id="alertaStock">Cantidad supera stock</div>
+            </td>
+            <td class="p-2 border text-center"><input name="precio_unitario[]" type="number" step="0.01" value="${p.precio.toFixed(2)}" class="w-24 text-center" onchange="filaActualizar(this)"></td>
+            <td class="p-2 border text-center"><input name="descuento_pct[]" type="number" min="0" max="100" value="0" class="w-20 text-center" onchange="filaActualizar(this)"></td>
+            <td class="p-2 border text-center"><input name="recargo[]" type="number" step="0.01" value="0" class="w-20 text-center" onchange="filaActualizar(this)"></td>
+            <td class="p-2 border text-center"><input name="subtotal[]" value="${p.precio.toFixed(2)}" readonly class="w-28 text-right bg-transparent"></td>
+            <td class="p-2 border text-center">
+                <button type="button" class="text-red-500" onclick="this.closest('tr').remove(); actualizarGlobal(); validarGuardarVenta();">✖</button>
+            </td>
+            <input type="hidden" name="producto_id[]" value="${p.id}">
+            <input type="hidden" name="numero_parte[]" value="">
+        `;
+        detalleBody.appendChild(tr);
+        actualizarGlobal();
+        validarGuardarVenta();
+    }
+
+    // función global para recalcular todos los totales
+    window.filaActualizar = function(el) {
+        const tr = el.closest('tr');
+        const cantidadInput = tr.querySelector('[name="cantidad[]"]');
+        const cantidad = parseFloat(cantidadInput.value || 0);
+        const stock = parseFloat(tr.querySelector('[name="stock[]"]').value || 0);
+        const alerta = tr.querySelector('#alertaStock');
+        if (cantidad > stock) {
+            cantidadInput.classList.add('border-red-500');
+            alerta.classList.remove('hidden');
         } else {
-            creditoFields.classList.add('hidden');
+            cantidadInput.classList.remove('border-red-500');
+            alerta.classList.add('hidden');
         }
-    });
+        const precio = parseFloat(tr.querySelector('[name="precio_unitario[]"]').value || 0);
+        const descuento_pct = parseFloat(tr.querySelector('[name="descuento_pct[]"]').value || 0);
+        const recargo = parseFloat(tr.querySelector('[name="recargo[]"]').value || 0);
+
+        const descuento_monto = (precio * (descuento_pct/100)) * cantidad;
+        const subtotal = (precio * cantidad) - descuento_monto + recargo;
+        tr.querySelector('[name="subtotal[]"]').value = subtotal.toFixed(2);
+
+        actualizarGlobal();
+    };
+
+    function actualizarGlobal() {
+        let subtotal = 0, descuento = 0, recargo = 0, errorStock = false;
+        document.querySelectorAll('#detalle-body tr').forEach(tr => {
+            const cant = parseFloat(tr.querySelector('[name="cantidad[]"]').value || 0);
+            const precio = parseFloat(tr.querySelector('[name="precio_unitario[]"]').value || 0);
+            const descuento_pct = parseFloat(tr.querySelector('[name="descuento_pct[]"]').value || 0);
+            const rec = parseFloat(tr.querySelector('[name="recargo[]"]').value || 0);
+            const stock = parseFloat(tr.querySelector('[name="stock[]"]').value || 0);
+
+            if (cant > stock) {
+                tr.querySelector('[name="cantidad[]"]').classList.add('border-red-500');
+                errorStock = true;
+            } else {
+                tr.querySelector('[name="cantidad[]"]').classList.remove('border-red-500');
+            }
+
+            const desc_monto = (precio * (descuento_pct/100)) * cant;
+            const line_subtotal = (precio * cant);
+
+            subtotal += line_subtotal;
+            descuento += desc_monto;
+            recargo += rec;
+        });
+
+        const total = subtotal - descuento + recargo;
+
+        document.getElementById('subtotal_global').textContent = subtotal.toLocaleString('es-PE', {minimumFractionDigits:2});
+        document.getElementById('descuento_global').textContent = descuento.toLocaleString('es-PE', {minimumFractionDigits:2});
+        document.getElementById('recargo_global').textContent = recargo.toLocaleString('es-PE', {minimumFractionDigits:2});
+        document.getElementById('total_global').textContent = total.toLocaleString('es-PE', {minimumFractionDigits:2});
+
+        // hidden inputs para enviar al servidor
+        document.getElementById('input_subtotal').value = subtotal.toFixed(2);
+        document.getElementById('input_descuento_total').value = descuento.toFixed(2);
+        document.getElementById('input_recargo_total').value = recargo.toFixed(2);
+        document.getElementById('input_total').value = total.toFixed(2);
+
+        // Deshabilitar guardar si hay error de stock
+        validarGuardarVenta(errorStock);
+    }
+
+    // Limpiar productos
+    document.getElementById('btnLimpiarProductos').onclick = () => {
+        detalleBody.innerHTML = '';
+        actualizarGlobal();
+        validarGuardarVenta();
+    };
+
+    // Validar botón guardar
+    function validarGuardarVenta(errorStock = false) {
+        const btn = document.getElementById('btnGuardarVenta');
+        const clienteId = document.getElementById('cliente_id').value;
+        const productos = document.querySelectorAll('#detalle-body tr').length;
+        btn.disabled = !clienteId || productos === 0 || errorStock;
+    }
+
+    // Toast de éxito
+    window.toast = function(msg, type = 'success') {
+        const t = document.createElement('div');
+        t.className = `fixed top-4 right-4 px-4 py-2 rounded shadow-lg z-50 text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+        t.textContent = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 2500);
+    }
+
+    // Si necesitas, puedes agregar una fila inicial vacía
+    // agregarFilaProducto({id:'',codigo:'',nombre:'',precio:0,stock:0});
 });
 </script>
 @endpush
-@endsection

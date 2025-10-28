@@ -1,3 +1,4 @@
+// ...existing code...
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -49,6 +50,7 @@ Route::get('productos/stock-bajo', [ProductoController::class, 'stockBajo'])->na
     // RF02: Gestión de Clientes
     Route::resource('clientes', ClienteController::class);
     Route::get('clientes/buscar', [ClienteController::class, 'buscar'])->name('clientes.buscar');
+    Route::post('clientes/crear', [ClienteController::class, 'storeAjax'])->name('clientes.storeAjax');
     Route::get('clientes/provincias/{region}', [ClienteController::class, 'provinciasByRegion'])->name('clientes.provincias');
     Route::get('clientes/distritos/{provincia}', [ClienteController::class, 'distritosByProvincia'])->name('clientes.distritos');
 
@@ -69,6 +71,8 @@ Route::get('productos/stock-bajo', [ProductoController::class, 'stockBajo'])->na
     Route::get('ventas/{venta}/comprobante/{tipo}', [VentaController::class, 'generarComprobante'])->name('ventas.comprobante');
     Route::get('ventas/{venta}/imprimir', [VentaController::class, 'imprimir'])->name('ventas.imprimir');
 
+    // Productos de una venta
+    Route::get('ventas/{venta}/productos', [App\Http\Controllers\VentaProductoController::class, 'show'])->name('ventas.productos');
     // RF07: Gestión de Cotizaciones
     Route::resource('cotizaciones', CotizacionController::class);
     Route::get('cotizaciones/{cotizacion}/convertir', [CotizacionController::class, 'convertirAVenta'])->name('cotizaciones.convertir');
@@ -114,6 +118,11 @@ Route::get('productos/stock-bajo', [ProductoController::class, 'stockBajo'])->na
 
 // Ruta alternativa para /home
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// routes/api.php
+Route::get('/clientes/buscar', [ClienteController::class, 'buscar']);
+Route::get('/productos/buscar', [ProductoController::class, 'buscar']);
+
 
 // Dev helper: quick-login as first user when APP_DEBUG=true (do not enable in production)
 if (config('app.debug')) {

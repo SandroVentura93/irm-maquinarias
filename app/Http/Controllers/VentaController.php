@@ -20,85 +20,99 @@ class VentaController extends Controller
 
     public function index()
     {
-        $ventas = Venta::with(['cliente', 'usuario'])->latest()->paginate(10);
+        $ventas = Venta::with('cliente')->orderByDesc('id')->paginate(15);
         return view('ventas.index', compact('ventas'));
     }
 
     public function create()
     {
-        $clientes = Cliente::all();
-        $productos = Producto::where('activo', 1)->get();
-        $monedas = Moneda::all();
-        return view('ventas.create', compact('clientes', 'productos', 'monedas'));
+        return view('ventas.create');
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
-            'tipo_venta' => 'required|in:contado,credito',
-            'metodo_pago' => 'required|string',
-            'items_json' => 'required|string',
+            'producto_id.*' => 'required|exists:productos,id',
+            'cantidad.*' => 'required|numeric|min:0.01',
+            'precio_unitario.*' => 'required|numeric|min:0',
+            'descuento_pct.*' => 'nullable|numeric|min:0|max:100',
         ]);
-
-        // Decodificar los items desde el campo oculto
-        $items = json_decode($request->items_json, true) ?? [];
 
         DB::beginTransaction();
         try {
-            $venta = Venta::create([
-                'fecha' => now(),
-                'cliente_id' => $request->cliente_id,
-                'usuario_id' => auth()->id(),
-                'tipo_venta' => $request->tipo_venta,
-                'metodo_pago' => $request->metodo_pago,
-                // Los demás campos se envían como null/opcional
-                'descripcion' => $request->descripcion ?? null,
-                'tipo_comprobante' => $request->tipo_comprobante ?? null,
-                'serie' => $request->serie ?? null,
-                'correlativo' => $request->correlativo ?? null,
-                'moneda_id' => $request->moneda_id ?? null,
-                'tc_usado' => $request->tc_usado ?? null,
-                'subtotal' => 0,
-                'descuento_total' => 0,
-                'recargo_total' => $request->recargo_total ?? 0,
-                'total' => 0,
-                'estado' => $request->estado ?? 'pendiente',
-                'omitir_fe' => $request->omitir_fe ?? false,
-                'observaciones' => $request->observaciones ?? null,
-            ]);
-
             $subtotal = 0;
             $descuento_total = 0;
-            foreach ($items as $item) {
-                $precio_unitario = floatval($item['precio']);
-                $descuento = floatval($item['descuento'] ?? 0);
-                $cantidad = floatval($item['cantidad']);
-                $precio_final = $precio_unitario - $descuento;
-                $detalle_subtotal = $precio_final * $cantidad;
-                $subtotal += $detalle_subtotal;
-                $descuento_total += $descuento * $cantidad;
+            $recargo_total = 0;
+
+            // compute totals per line
+            foreach ($request->producto_id as $i => $pid) {
+                $cant = floatval($request->cantidad[$i]);
+                $precio = floatval($request->precio_unitario[$i]);
+                $desc_pct = floatval($request->descuento_pct[$i] ?? 0);
+                $recargo = floatval($request->recargo[$i] ?? 0);
+
+                $desc_monto = ($precio * ( $desc_pct / 100 )) * $cant; // descuento por % sobre precio unitario
+                $line_sub = ($precio * $cant) - $desc_monto + $recargo;
+
+                $subtotal += ($precio * $cant);
+                $descuento_total += $desc_monto;
+                $recargo_total += $recargo;
+            }
+
+            $total = $subtotal - $descuento_total + $recargo_total;
+
+            $venta = Venta::create([
+                'fecha' => $request->fecha ?? now(),
+                'cliente_id' => $request->cliente_id,
+                'usuario_id' => Auth::id(),
+                'descripcion' => $request->descripcion,
+                'tipo_venta' => $request->tipo_venta,
+                'tipo_comprobante' => $request->tipo_comprobante,
+                'serie' => $request->serie,
+                'correlativo' => $request->correlativo,
+                'moneda_id' => $request->moneda_id,
+                'tc_usado' => $request->tc_usado,
+                'subtotal' => $subtotal,
+                'descuento_total' => $descuento_total,
+                'recargo_total' => $recargo_total,
+                'total' => $total,
+                'estado' => 'registrado',
+                'omitir_fe' => $request->omitir_fe ?? false,
+                'observaciones' => $request->observaciones,
+            ]);
+
+            // Insert detalles
+            foreach ($request->producto_id as $i => $pid) {
+                $cant = floatval($request->cantidad[$i]);
+                $precio = floatval($request->precio_unitario[$i]);
+                $desc_pct = floatval($request->descuento_pct[$i] ?? 0);
+                $desc_monto = ($precio * ($desc_pct / 100)) * $cant;
+                $recargo = floatval($request->recargo[$i] ?? 0);
+                $line_sub = ($precio * $cant) - $desc_monto + $recargo;
+
                 VentaDetalle::create([
                     'venta_id' => $venta->id,
-                    'producto_id' => $item['producto_id'],
-                    'descripcion' => $item['descripcion'] ?? '',
-                    'cantidad' => $cantidad,
-                    'precio_unitario' => $precio_unitario,
-                    'descuento' => $descuento,
-                    'recargo' => 0,
-                    'subtotal' => $detalle_subtotal,
+                    'producto_id' => $pid,
+                    'codigo_producto' => $request->codigo_producto[$i] ?? null,
+                    'numero_parte' => $request->numero_parte[$i] ?? null,
+                    'descripcion' => $request->descripcion_detalle[$i] ?? null,
+                    'cantidad' => $cant,
+                    'precio_unitario' => $precio,
+                    'descuento' => $desc_monto,
+                    'recargo' => $recargo,
+                    'subtotal' => $line_sub,
                 ]);
+
+                // Opcional: descontar stock del producto (si quieres)
+                // Producto::where('id', $pid)->decrement('stock', $cant);
             }
-            $venta->subtotal = $subtotal;
-            $venta->descuento_total = $descuento_total;
-            $venta->total = $subtotal + ($request->recargo_total ?? 0);
-            $venta->save();
 
             DB::commit();
-            return redirect()->route('ventas.show', $venta)->with('success', 'Venta registrada exitosamente');
+            return redirect()->route('ventas.index')->with('success','Venta registrada correctamente.');
         } catch (\Exception $e) {
             DB::rollback();
-            return back()->with('error', 'Error al registrar la venta: ' . $e->getMessage());
+            return back()->withInput()->with('error','Error: '.$e->getMessage());
         }
     }
 
@@ -148,6 +162,8 @@ class VentaController extends Controller
 
     public function imprimir(Venta $venta)
     {
-        return view('ventas.imprimir', compact('venta'));
+    $venta->load(['cliente', 'usuario', 'moneda', 'detalles.producto']);
+    $pdf = \PDF::loadView('ventas.ticket', compact('venta'));
+    return $pdf->stream('ticket_venta_'.$venta->id.'.pdf');
     }
 }

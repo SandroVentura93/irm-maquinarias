@@ -9,33 +9,26 @@ class CreateVentasTable extends Migration
     public function up()
     {
         Schema::create('ventas', function (Blueprint $table) {
-            $table->bigInteger('id')->unsigned()->autoIncrement();
-            $table->dateTime('fecha')->default(DB::raw('CURRENT_TIMESTAMP'));
-            $table->bigInteger('cliente_id')->unsigned()->nullable();
-            $table->bigInteger('usuario_id')->unsigned();
-            $table->string('descripcion', 255)->nullable();
-            $table->enum('tipo_venta', ['contado', 'credito']);
-            $table->enum('tipo_comprobante', ['boleta', 'factura', 'ticket', 'guia_remision', 'cotizacion'])->nullable();
+            $table->id();
+            $table->date('fecha')->default(DB::raw('CURRENT_DATE'));
+            $table->foreignId('cliente_id')->constrained('clientes');
+            $table->foreignId('usuario_id')->constrained('users');
+            $table->string('descripcion')->nullable();
+            $table->string('tipo_venta')->nullable();
+            $table->string('tipo_comprobante')->nullable();
             $table->string('serie', 10)->nullable();
-            $table->integer('correlativo')->unsigned()->nullable();
-            $table->tinyInteger('moneda_id')->unsigned()->nullable();
-            $table->decimal('tc_usado', 12, 6)->nullable();
-            $table->decimal('subtotal', 14, 4)->nullable();
-            $table->decimal('descuento_total', 14, 4)->nullable();
-            $table->decimal('recargo_total', 14, 4)->nullable();
-            $table->decimal('total', 14, 4)->nullable();
-            $table->enum('estado', ['pendiente', 'deuda', 'cancelado', 'anulado'])->nullable();
-            $table->boolean('omitir_fe')->nullable();
-            $table->string('observaciones', 255)->nullable();
+            $table->string('correlativo', 20)->nullable();
+            $table->foreignId('moneda_id')->nullable()->constrained('monedas');
+            $table->decimal('tc_usado', 12, 2)->nullable();
+            $table->decimal('subtotal', 12, 2)->default(0);
+            $table->decimal('descuento_total', 12, 2)->default(0);
+            $table->decimal('recargo_total', 12, 2)->default(0);
+            $table->decimal('total', 12, 2)->default(0);
+            $table->string('estado')->default('registrado');
+            $table->boolean('omitir_fe')->default(false);
+            $table->text('observaciones')->nullable();
             $table->timestamps();
-
-            $table->foreign('cliente_id')->references('id')->on('clientes');
-            $table->foreign('usuario_id')->references('id')->on('users');
-            $table->foreign('moneda_id')->references('id')->on('monedas');
-
-            $table->index(['estado', 'fecha']);
-            $table->index(['cliente_id']);
-            $table->index(['tipo_comprobante', 'serie', 'correlativo']);
+            $table->softDeletes();
         });
     }
 

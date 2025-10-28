@@ -19,4 +19,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::apiResource('productos', ProductoController::class);
+Route::get('productos/buscar', [App\Http\Controllers\ProductoController::class, 'buscar']);
+Route::get('clientes/buscar', [App\Http\Controllers\ClienteController::class, 'buscar']);
 

@@ -7,6 +7,20 @@ use Illuminate\Http\Request;
 class ProductoController extends Controller
 {
     /**
+     * Buscar productos para Select2 AJAX
+     */
+    public function buscar(Request $request)
+    {
+        $q = $request->query('q','');
+        // Retornar info necesaria: id, codigo, nombre, precio_unitario, stock_actual
+        $productos = Producto::where('nombre','LIKE',"%{$q}%")
+            ->orWhere('codigo','LIKE', "%{$q}%")
+            ->limit(10)
+            ->get(['id','codigo as codigo_producto','nombre as descripcion','precio_unitario','stock as stock_actual']);
+        return response()->json($productos);
+    }
+
+    /**
      * Mostrar productos con stock bajo
      */
     public function stockBajo()
